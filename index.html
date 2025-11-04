@@ -9,22 +9,54 @@
     <!-- JSZip CDN for ZIP file generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        /* Custom font import for a cleaner look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        /* Fonte elegante similar à San Francisco/Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7; /* Light background */
+            /* Pilha de fontes que simula o estilo SF Pro */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f0f3f8; /* Fundo suave, típico de PWAs */
+            color: #333333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
         }
-        /* Custom scrollbar style for the cheat code textarea */
-        textarea::-webkit-scrollbar {
-            width: 8px;
+
+        /* Define a cor principal para o foco e interatividade */
+        .switch-red { color: #E70009; }
+        .bg-switch-red { background-color: #E70009; }
+        .border-switch-red { border-color: #E70009; }
+        .focus-ring-switch-red:focus { box-shadow: 0 0 0 3px rgba(231, 0, 9, 0.5); border-color: #E70009; }
+        
+        /* Estilo para os inputs */
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #E70009;
+            box-shadow: 0 0 0 1px #E70009;
         }
-        textarea::-webkit-scrollbar-thumb {
-            background-color: #4a5568; /* Gray-700 */
-            border-radius: 4px;
+
+        /* Estilização da caixa de mensagem de status */
+        #messageBox {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-5px);
         }
-        textarea::-webkit-scrollbar-track {
-            background: #e2e8f0; /* Gray-200 */
+        #messageBox.opacity-100 {
+            transform: translateY(0);
+        }
+        /* Cores de feedback mais suaves para o PWA look */
+        #messageBox.error-style { background-color: #ffe0e0; color: #b91c1c; border-color: #E70009; }
+        #messageBox.success-style { background-color: #e6ffec; color: #057a55; border-color: #10b981; }
+
+        /* Estilo para o Textarea de Código (para simular uma área de código) */
+        #cheatCode {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            padding: 10px;
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
         }
     </style>
     <script>
@@ -32,63 +64,64 @@
             theme: {
                 extend: {
                     colors: {
-                        'switch-blue': '#00B0E6',
-                        'switch-red': '#E60012',
+                        'switch-red': '#E70009',
+                        'soft-bg': '#f0f3f8',
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+<body class="selection:bg-switch-red selection:text-white">
 
-    <!-- Main Container -->
-    <div id="app" class="w-full max-w-lg bg-white shadow-2xl rounded-xl p-6 md:p-10 border-t-8 border-switch-red">
+    <!-- Main Container: Card com sombra suave e bordas arredondadas (PWA look) -->
+    <div id="app" class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
         
-        <!-- Header -->
+        <!-- Header (Limpo e elegante) -->
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">
-                Switch O' Matic
+            <img src="icon-192x192.png" alt="Switch O' Matic Logo" class="w-20 h-20 mx-auto mb-4 drop-shadow-md">
+            <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">
+                <span class="switch-red">Switch</span> O' Matic
             </h1>
-            <p class="text-gray-500">Gerador de Estrutura de Cheats para Nintendo Switch</p>
+            <p class="text-gray-500 mt-1 font-medium text-sm">Gerador de Cheats Estruturado</p>
         </header>
 
         <!-- Form Area -->
         <form id="cheatForm" onsubmit="handleChaChing(event)">
 
             <!-- Status/Error Message Area -->
-            <div id="messageBox" class="p-3 mb-6 hidden rounded-lg text-sm transition-opacity duration-300"></div>
+            <div id="messageBox" class="p-3 mb-6 hidden rounded-lg text-sm font-medium transition-all duration-300"></div>
 
             <!-- Game ID Input -->
-            <div class="mb-4">
-                <label for="gameId" class="block text-sm font-semibold text-gray-700 mb-1">ID do Jogo (Game ID - 16 dígitos Hex)</label>
-                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: 0100ABCD00001000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 text-gray-900" oninput="validateId(this)">
-                <p id="gameIdError" class="text-xs text-red-500 mt-1 hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+            <div class="mb-5">
+                <label for="gameId" class="block text-xs font-semibold uppercase text-gray-500 mb-1">ID do Jogo (16 dígitos Hex)</label>
+                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: 0100ABCD00001000" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800" oninput="validateId(this)">
+                <p id="gameIdError" class="text-xs text-switch-red mt-1 font-medium hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
             </div>
 
             <!-- Update ID Input -->
-            <div class="mb-4">
-                <label for="updateId" class="block text-sm font-semibold text-gray-700 mb-1">ID de Update (Build ID - 16 dígitos Hex)</label>
-                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: F719A700588E2BCF" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 text-gray-900" oninput="validateId(this)">
-                <p id="updateIdError" class="text-xs text-red-500 mt-1 hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+            <div class="mb-5">
+                <label for="updateId" class="block text-xs font-semibold uppercase text-gray-500 mb-1">ID de Update (16 dígitos Hex)</label>
+                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: F719A700588E2BCF" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800" oninput="validateId(this)">
+                <p id="updateIdError" class="text-xs text-switch-red mt-1 font-medium hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
             </div>
 
             <!-- Cheat Name Input -->
-            <div class="mb-4">
-                <label for="cheatName" class="block text-sm font-semibold text-gray-700 mb-1">Nome do Cheat</label>
-                <input type="text" id="cheatName" name="cheatName" required placeholder="Ex: Vida Infinita" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 text-gray-900">
+            <div class="mb-5">
+                <label for="cheatName" class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nome do Cheat</label>
+                <input type="text" id="cheatName" name="cheatName" required placeholder="Ex: Vida Infinita" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800">
             </div>
 
             <!-- Cheat Code Textarea -->
-            <div class="mb-6">
-                <label for="cheatCode" class="block text-sm font-semibold text-gray-700 mb-1">Código do Cheat</label>
-                <!-- O tamanho mínimo é definido pela propriedade 'rows' -->
-                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="Insira seu código do cheat aqui. Ex: 580F0000 05B00000..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 resize-y text-gray-900"></textarea>
+            <div class="mb-8">
+                <label for="cheatCode" class="block text-xs font-semibold uppercase text-gray-500 mb-1">Código do Cheat</label>
+                <!-- Aumentado para 6 linhas para melhor visualização de código -->
+                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="Insira seu código do cheat aqui. Ex: 580F0000 05B00000..." class="w-full rounded-xl transition duration-150 resize-y text-gray-800"></textarea>
             </div>
 
-            <!-- Submit Button -->
-            <button type="submit" id="submitButton" class="w-full bg-switch-blue text-white font-bold py-3 rounded-lg shadow-lg hover:bg-opacity-90 transition duration-300 transform hover:scale-[1.01] flex items-center justify-center active:bg-switch-blue active:shadow-md">
-                <span id="buttonText">Cha-Ching!</span>
+            <!-- Submit Button (Full Red Focus) -->
+            <button type="submit" id="submitButton" class="w-full bg-switch-red text-white font-bold py-4 rounded-xl shadow-lg shadow-switch-red/50 hover:bg-opacity-95 transition duration-200 transform hover:scale-[1.01] flex items-center justify-center active:scale-[0.98] focus:ring-4 focus:ring-switch-red/40 focus:outline-none">
+                <span id="buttonText" class="text-lg">Cha-Ching!</span>
                 <div id="spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
             </button>
         </form>
@@ -104,7 +137,6 @@
 
         /**
          * Função de validação em tempo real para os campos de 16 dígitos.
-         * Garante que o usuário só insira caracteres hexadecimais e avisa se o tamanho estiver errado.
          * @param {HTMLInputElement} input - O elemento de input a ser validado.
          */
         function validateId(input) {
@@ -123,14 +155,14 @@
 
             // Verificar o comprimento final
             if (input.value.length !== 16) {
-                errorElement.textContent = "O ID deve ter exatamente 16 dígitos hexadecimais.";
                 errorElement.classList.remove('hidden');
-                input.classList.add('border-red-500');
+                input.classList.remove('border-green-500');
+                input.classList.add('border-switch-red'); // Destacar o erro
                 return false;
             } else {
                 errorElement.classList.add('hidden');
-                input.classList.remove('border-red-500');
-                input.classList.add('border-green-500');
+                input.classList.remove('border-switch-red', 'border-gray-300');
+                input.classList.add('border-green-500'); // Indicador de sucesso
                 return true;
             }
         }
@@ -142,18 +174,18 @@
          */
         function showMessage(message, type) {
             messageBox.textContent = message;
-            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'opacity-0');
+            messageBox.classList.remove('hidden', 'error-style', 'success-style', 'opacity-0');
             
             if (type === 'error') {
-                messageBox.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-400');
+                messageBox.classList.add('error-style');
             } else {
-                messageBox.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-400');
+                messageBox.classList.add('success-style');
             }
             messageBox.classList.add('opacity-100');
 
             // Ocultar a mensagem após 5 segundos
             setTimeout(() => {
-                messageBox.classList.add('opacity-0');
+                messageBox.classList.remove('opacity-100');
                 setTimeout(() => messageBox.classList.add('hidden'), 300);
             }, 5000);
         }
@@ -167,9 +199,13 @@
             if (isLoading) {
                 buttonText.textContent = 'Gerando ZIP...';
                 spinner.classList.remove('hidden');
+                submitButton.classList.add('bg-gray-400', 'cursor-not-allowed', 'shadow-none');
+                submitButton.classList.remove('bg-switch-red', 'shadow-switch-red/50', 'hover:bg-opacity-95');
             } else {
                 buttonText.textContent = 'Cha-Ching!';
                 spinner.classList.add('hidden');
+                submitButton.classList.remove('bg-gray-400', 'cursor-not-allowed', 'shadow-none');
+                submitButton.classList.add('bg-switch-red', 'shadow-switch-red/50', 'hover:bg-opacity-95');
             }
         }
 
@@ -180,7 +216,7 @@
         async function handleChaChing(event) {
             event.preventDefault();
             setLoading(true);
-            messageBox.classList.add('hidden');
+            messageBox.classList.add('hidden'); 
 
             const gameId = document.getElementById('gameId').value.toUpperCase();
             const updateId = document.getElementById('updateId').value.toUpperCase();
@@ -205,7 +241,6 @@
                 const fileContent = `[${cheatName}]\n${cheatCode.trim()}`;
 
                 // 4. Criar a estrutura de pastas
-                // Caminho: [ID do Jogo]/[Nome do Cheat]/cheats/[ID de Update].txt
                 const zipPath = `${gameId}/${cheatName}/cheats/${updateId}.txt`;
                 
                 // Adicionar o arquivo ao ZIP usando o caminho completo (JSZip cria as pastas automaticamente)
@@ -214,14 +249,13 @@
                 // 5. Gerar o arquivo ZIP como Blob
                 const content = await zip.generateAsync({
                     type: "blob",
-                    compression: "DEFLATE", // Compactação para arquivos menores
+                    compression: "DEFLATE", 
                     compressionOptions: { level: 9 }
                 });
 
                 // 6. Iniciar o download
                 const downloadFileName = `${gameId}.zip`;
                 
-                // Usar um elemento 'a' temporário para forçar o download
                 const a = document.createElement('a');
                 const url = URL.createObjectURL(content);
                 a.href = url;
@@ -230,7 +264,6 @@
                 a.click();
                 document.body.removeChild(a);
                 
-                // Limpar o objeto URL após o download
                 URL.revokeObjectURL(url);
 
                 showMessage(`Arquivo "${downloadFileName}" gerado e baixado com sucesso!`, 'success');
@@ -247,7 +280,9 @@
         window.onload = function() {
             document.getElementById('gameId').addEventListener('input', function() { validateId(this); });
             document.getElementById('updateId').addEventListener('input', function() { validateId(this); });
+            messageBox.classList.add('hidden');
         };
     </script>
 </body>
 </html>
+
