@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switch O' Matic</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip CDN for ZIP file generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        /* Custom font import for a cleaner look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7; /* Light background */
+        }
+        /* Custom scrollbar style for the cheat code textarea */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #4a5568; /* Gray-700 */
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #e2e8f0; /* Gray-200 */
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'switch-blue': '#00B0E6',
+                        'switch-red': '#E60012',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+
+    <!-- Main Container -->
+    <div id="app" class="w-full max-w-lg bg-white shadow-2xl rounded-xl p-6 md:p-10 border-t-8 border-switch-red">
+        
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">
+                Switch O' Matic
+            </h1>
+            <p class="text-gray-500">Gerador de Estrutura de Cheats para Nintendo Switch</p>
+        </header>
+
+        <!-- Form Area -->
+        <form id="cheatForm" onsubmit="handleChaChing(event)">
+
+            <!-- Status/Error Message Area -->
+            <div id="messageBox" class="p-3 mb-6 hidden rounded-lg text-sm transition-opacity duration-300"></div>
+
+            <!-- Game ID Input -->
+            <div class="mb-4">
+                <label for="gameId" class="block text-sm font-semibold text-gray-700 mb-1">ID do Jogo (Game ID - 16 dígitos Hex)</label>
+                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: 0100ABCD00001000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 text-gray-900" oninput="validateId(this)">
+                <p id="gameIdError" class="text-xs text-red-500 mt-1 hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+            </div>
+
+            <!-- Update ID Input -->
+            <div class="mb-4">
+                <label for="updateId" class="block text-sm font-semibold text-gray-700 mb-1">ID de Update (Build ID - 16 dígitos Hex)</label>
+                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: F719A700588E2BCF" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 text-gray-900" oninput="validateId(this)">
+                <p id="updateIdError" class="text-xs text-red-500 mt-1 hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+            </div>
+
+            <!-- Cheat Name Input -->
+            <div class="mb-4">
+                <label for="cheatName" class="block text-sm font-semibold text-gray-700 mb-1">Nome do Cheat</label>
+                <input type="text" id="cheatName" name="cheatName" required placeholder="Ex: Vida Infinita" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 text-gray-900">
+            </div>
+
+            <!-- Cheat Code Textarea -->
+            <div class="mb-6">
+                <label for="cheatCode" class="block text-sm font-semibold text-gray-700 mb-1">Código do Cheat</label>
+                <!-- O tamanho mínimo é definido pela propriedade 'rows' -->
+                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="Insira seu código do cheat aqui. Ex: 580F0000 05B00000..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-switch-red focus:border-switch-red transition duration-150 resize-y text-gray-900"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitButton" class="w-full bg-switch-blue text-white font-bold py-3 rounded-lg shadow-lg hover:bg-opacity-90 transition duration-300 transform hover:scale-[1.01] flex items-center justify-center active:bg-switch-blue active:shadow-md">
+                <span id="buttonText">Cha-Ching!</span>
+                <div id="spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+            </button>
+        </form>
+
+    </div>
+
+    <script>
+        // Variáveis globais para referências de UI
+        const messageBox = document.getElementById('messageBox');
+        const submitButton = document.getElementById('submitButton');
+        const buttonText = document.getElementById('buttonText');
+        const spinner = document.getElementById('spinner');
+
+        /**
+         * Função de validação em tempo real para os campos de 16 dígitos.
+         * Garante que o usuário só insira caracteres hexadecimais e avisa se o tamanho estiver errado.
+         * @param {HTMLInputElement} input - O elemento de input a ser validado.
+         */
+        function validateId(input) {
+            const errorElement = document.getElementById(`${input.id}Error`);
+            const hexRegex = /^[0-9A-Fa-f]{0,16}$/;
+            const value = input.value.toUpperCase();
+
+            // Filtrar caracteres não hexadecimais (mantendo o limite de 16)
+            let filteredValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (hexRegex.test(value.substring(0, i + 1))) {
+                    filteredValue += value[i];
+                }
+            }
+            input.value = filteredValue.substring(0, 16);
+
+            // Verificar o comprimento final
+            if (input.value.length !== 16) {
+                errorElement.textContent = "O ID deve ter exatamente 16 dígitos hexadecimais.";
+                errorElement.classList.remove('hidden');
+                input.classList.add('border-red-500');
+                return false;
+            } else {
+                errorElement.classList.add('hidden');
+                input.classList.remove('border-red-500');
+                input.classList.add('border-green-500');
+                return true;
+            }
+        }
+
+        /**
+         * Exibe uma mensagem de feedback na caixa de mensagens.
+         * @param {string} message - O texto da mensagem.
+         * @param {string} type - O tipo de mensagem ('success' ou 'error').
+         */
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'opacity-0');
+            
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-400');
+            } else {
+                messageBox.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-400');
+            }
+            messageBox.classList.add('opacity-100');
+
+            // Ocultar a mensagem após 5 segundos
+            setTimeout(() => {
+                messageBox.classList.add('opacity-0');
+                setTimeout(() => messageBox.classList.add('hidden'), 300);
+            }, 5000);
+        }
+
+        /**
+         * Controla o estado de carregamento do botão.
+         * @param {boolean} isLoading - Se deve mostrar o estado de carregamento.
+         */
+        function setLoading(isLoading) {
+            submitButton.disabled = isLoading;
+            if (isLoading) {
+                buttonText.textContent = 'Gerando ZIP...';
+                spinner.classList.remove('hidden');
+            } else {
+                buttonText.textContent = 'Cha-Ching!';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Lida com o envio do formulário, cria a estrutura ZIP e inicia o download.
+         * @param {Event} event - O evento de envio do formulário.
+         */
+        async function handleChaChing(event) {
+            event.preventDefault();
+            setLoading(true);
+            messageBox.classList.add('hidden');
+
+            const gameId = document.getElementById('gameId').value.toUpperCase();
+            const updateId = document.getElementById('updateId').value.toUpperCase();
+            const cheatName = document.getElementById('cheatName').value;
+            const cheatCode = document.getElementById('cheatCode').value;
+
+            // 1. Validação final
+            const isGameIdValid = validateId(document.getElementById('gameId'));
+            const isUpdateIdValid = validateId(document.getElementById('updateId'));
+            
+            if (!isGameIdValid || !isUpdateIdValid || !cheatName || !cheatCode) {
+                showMessage('Por favor, preencha todos os campos e corrija os IDs de 16 dígitos.', 'error');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                // 2. Inicializar JSZip
+                const zip = new JSZip();
+
+                // 3. Definir o conteúdo do arquivo TXT
+                const fileContent = `[${cheatName}]\n${cheatCode.trim()}`;
+
+                // 4. Criar a estrutura de pastas
+                // Caminho: [ID do Jogo]/[Nome do Cheat]/cheats/[ID de Update].txt
+                const zipPath = `${gameId}/${cheatName}/cheats/${updateId}.txt`;
+                
+                // Adicionar o arquivo ao ZIP usando o caminho completo (JSZip cria as pastas automaticamente)
+                zip.file(zipPath, fileContent);
+
+                // 5. Gerar o arquivo ZIP como Blob
+                const content = await zip.generateAsync({
+                    type: "blob",
+                    compression: "DEFLATE", // Compactação para arquivos menores
+                    compressionOptions: { level: 9 }
+                });
+
+                // 6. Iniciar o download
+                const downloadFileName = `${gameId}.zip`;
+                
+                // Usar um elemento 'a' temporário para forçar o download
+                const a = document.createElement('a');
+                const url = URL.createObjectURL(content);
+                a.href = url;
+                a.download = downloadFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Limpar o objeto URL após o download
+                URL.revokeObjectURL(url);
+
+                showMessage(`Arquivo "${downloadFileName}" gerado e baixado com sucesso!`, 'success');
+                
+            } catch (error) {
+                console.error("Erro ao gerar ou baixar o arquivo ZIP:", error);
+                showMessage('Ocorreu um erro inesperado ao gerar o arquivo. Tente novamente.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Aplicar a validação aos campos de ID ao carregar a página
+        window.onload = function() {
+            document.getElementById('gameId').addEventListener('input', function() { validateId(this); });
+            document.getElementById('updateId').addEventListener('input', function() { validateId(this); });
+        };
+    </script>
+</body>
+</html>
