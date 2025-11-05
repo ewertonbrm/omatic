@@ -9,14 +9,14 @@
     <!-- JSZip CDN for ZIP file generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        /* Fonte elegante similar à San Francisco/Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        /* Importa a fonte Poppins */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
         
+        /* Estilos globais e fundo vermelho E70009 */
         body {
-            /* Pilha de fontes que simula o estilo SF Pro */
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            background-color: #f0f3f8; /* Fundo suave, típico de PWAs */
-            color: #333333;
+            font-family: 'Poppins', sans-serif;
+            background-color: #E70009; /* Fundo vermelho solicitado */
+            color: #ffffff; /* Texto claro no fundo vermelho */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,13 +28,22 @@
         .switch-red { color: #E70009; }
         .bg-switch-red { background-color: #E70009; }
         .border-switch-red { border-color: #E70009; }
-        .focus-ring-switch-red:focus { box-shadow: 0 0 0 3px rgba(231, 0, 9, 0.5); border-color: #E70009; }
-        
-        /* Estilo para os inputs */
+
+        /* Estilo para o container principal (agora vermelho) */
+        .main-card {
+            /* Sombra clara para fazê-lo saltar do fundo */
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            transition: box-shadow 0.3s ease;
+        }
+        .main-card:hover {
+            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Estilo de foco para inputs - Borda vermelha forte */
         input:focus, textarea:focus {
             outline: none;
-            border-color: #E70009;
-            box-shadow: 0 0 0 1px #E70009;
+            border-color: #E70009 !important;
+            box-shadow: 0 0 0 2px #E70009;
         }
 
         /* Estilização da caixa de mensagem de status */
@@ -42,21 +51,40 @@
             opacity: 0;
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
             transform: translateY(-5px);
+            color: #1a1a1a; /* Texto escuro para legibilidade nas mensagens */
         }
         #messageBox.opacity-100 {
             transform: translateY(0);
         }
-        /* Cores de feedback mais suaves para o PWA look */
-        #messageBox.error-style { background-color: #ffe0e0; color: #b91c1c; border-color: #E70009; }
-        #messageBox.success-style { background-color: #e6ffec; color: #057a55; border-color: #10b981; }
+        /* Cores de feedback - Usam o vermelho principal e verde para contraste */
+        #messageBox.error-style { 
+            background-color: #ffffff; /* Branco para destacar o erro */
+            color: #E70009; 
+            border-left: 5px solid #E70009; 
+        }
+        #messageBox.success-style { 
+            background-color: #ccffdd; /* Verde suave para sucesso */
+            color: #057a55; 
+            border-left: 5px solid #10b981; 
+        }
 
-        /* Estilo para o Textarea de Código (para simular uma área de código) */
+        /* Estilo para o Textarea de Código (fonte monoespaçada e fundo claro) */
         #cheatCode {
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-            padding: 10px;
-            background-color: #fafafa;
+            padding: 12px;
+            background-color: #f7f7f7;
             border: 1px solid #e0e0e0;
             transition: all 0.2s ease;
+            color: #1a1a1a; /* Texto escuro para o código */
+        }
+
+        /* Animação de pulso para o ícone (mantida) */
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-icon {
+            animation: pulse-icon 2s infinite ease-in-out;
         }
     </style>
     <script>
@@ -65,25 +93,24 @@
                 extend: {
                     colors: {
                         'switch-red': '#E70009',
-                        'soft-bg': '#f0f3f8',
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="selection:bg-switch-red selection:text-white">
+<body class="selection:bg-white selection:text-switch-red">
 
-    <!-- Main Container: Card com sombra suave e bordas arredondadas (PWA look) -->
-    <div id="app" class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
+    <!-- Main Container: Agora usa a cor Switch Red E70009 com sombra branca para destaque -->
+    <div id="app" class="w-full max-w-md bg-switch-red main-card rounded-2xl p-6 md:p-8">
         
         <!-- Header (Limpo e elegante) -->
         <header class="text-center mb-8">
-            <img src="icon-192x192.png" alt="Switch O' Matic Logo" class="w-20 h-20 mx-auto mb-4 drop-shadow-md">
-            <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">
-                <span class="switch-red">Switch</span> O' Matic
+            <img src="icon-192x192.png" alt="Switch O' Matic Logo" class="w-20 h-20 mx-auto mb-4 animate-pulse-icon drop-shadow-md">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight">
+                Switch O' Matic
             </h1>
-            <p class="text-gray-500 mt-1 font-medium text-sm">Gerador de Cheats Estruturado</p>
+            <p class="text-white mt-1 font-medium text-sm opacity-90">Gerador de Cheats Estruturado</p>
         </header>
 
         <!-- Form Area -->
@@ -94,33 +121,33 @@
 
             <!-- Game ID Input -->
             <div class="mb-5">
-                <label for="gameId" class="block text-xs font-semibold uppercase text-gray-500 mb-1">ID do Jogo (16 dígitos Hex)</label>
-                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: 0100ABCD00001000" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800" oninput="validateId(this)">
-                <p id="gameIdError" class="text-xs text-switch-red mt-1 font-medium hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+                <label for="gameId" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">ID do Jogo (16 dígitos Hex)</label>
+                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: 0100ABCD00001000" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800 focus:border-switch-red" oninput="validateId(this)">
+                <p id="gameIdError" class="text-xs text-white mt-1 font-medium hidden" style="text-shadow: 0 0 5px rgba(0,0,0,0.5);">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
             </div>
 
             <!-- Update ID Input -->
             <div class="mb-5">
-                <label for="updateId" class="block text-xs font-semibold uppercase text-gray-500 mb-1">ID de Update (16 dígitos Hex)</label>
-                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: F719A700588E2BCF" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800" oninput="validateId(this)">
-                <p id="updateIdError" class="text-xs text-switch-red mt-1 font-medium hidden">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+                <label for="updateId" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">ID de Update (16 dígitos Hex)</label>
+                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: F719A700588E2BCF" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800 focus:border-switch-red" oninput="validateId(this)">
+                <p id="updateIdError" class="text-xs text-white mt-1 font-medium hidden" style="text-shadow: 0 0 5px rgba(0,0,0,0.5);">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
             </div>
 
             <!-- Cheat Name Input -->
             <div class="mb-5">
-                <label for="cheatName" class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nome do Cheat</label>
-                <input type="text" id="cheatName" name="cheatName" required placeholder="Ex: Vida Infinita" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800">
+                <label for="cheatName" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">Nome do Cheat</label>
+                <input type="text" id="cheatName" name="cheatName" required placeholder="Ex: Vida Infinita" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800 focus:border-switch-red">
             </div>
 
             <!-- Cheat Code Textarea -->
             <div class="mb-8">
-                <label for="cheatCode" class="block text-xs font-semibold uppercase text-gray-500 mb-1">Código do Cheat</label>
-                <!-- Aumentado para 6 linhas para melhor visualização de código -->
-                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="Insira seu código do cheat aqui. Ex: 580F0000 05B00000..." class="w-full rounded-xl transition duration-150 resize-y text-gray-800"></textarea>
+                <label for="cheatCode" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">Código do Cheat</label>
+                <!-- O input tem cor escura para legibilidade do código -->
+                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="Insira seu código do cheat aqui. Ex: 580F0000 05B00000..." class="w-full rounded-xl transition duration-150 resize-y"></textarea>
             </div>
 
-            <!-- Submit Button (Full Red Focus) -->
-            <button type="submit" id="submitButton" class="w-full bg-switch-red text-white font-bold py-4 rounded-xl shadow-lg shadow-switch-red/50 hover:bg-opacity-95 transition duration-200 transform hover:scale-[1.01] flex items-center justify-center active:scale-[0.98] focus:ring-4 focus:ring-switch-red/40 focus:outline-none">
+            <!-- Submit Button (Usamos uma cor contrastante para o botão, como um cinza escuro) -->
+            <button type="submit" id="submitButton" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-black/40 hover:bg-black transition duration-200 transform hover:scale-[1.01] flex items-center justify-center active:scale-[0.98] focus:ring-4 focus:ring-white/50 focus:outline-none">
                 <span id="buttonText" class="text-lg">Cha-Ching!</span>
                 <div id="spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
             </button>
@@ -178,8 +205,10 @@
             
             if (type === 'error') {
                 messageBox.classList.add('error-style');
+                messageBox.classList.remove('success-style');
             } else {
                 messageBox.classList.add('success-style');
+                messageBox.classList.remove('error-style');
             }
             messageBox.classList.add('opacity-100');
 
@@ -199,13 +228,13 @@
             if (isLoading) {
                 buttonText.textContent = 'Gerando ZIP...';
                 spinner.classList.remove('hidden');
-                submitButton.classList.add('bg-gray-400', 'cursor-not-allowed', 'shadow-none');
-                submitButton.classList.remove('bg-switch-red', 'shadow-switch-red/50', 'hover:bg-opacity-95');
+                submitButton.classList.add('bg-gray-700', 'cursor-not-allowed', 'shadow-none');
+                submitButton.classList.remove('bg-gray-900', 'shadow-black/40', 'hover:bg-black');
             } else {
                 buttonText.textContent = 'Cha-Ching!';
                 spinner.classList.add('hidden');
-                submitButton.classList.remove('bg-gray-400', 'cursor-not-allowed', 'shadow-none');
-                submitButton.classList.add('bg-switch-red', 'shadow-switch-red/50', 'hover:bg-opacity-95');
+                submitButton.classList.remove('bg-gray-700', 'cursor-not-allowed', 'shadow-none');
+                submitButton.classList.add('bg-gray-900', 'shadow-black/40', 'hover:bg-black');
             }
         }
 
