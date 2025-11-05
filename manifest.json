@@ -1,0 +1,22 @@
+{
+    "name": "Switch O' Matic",
+    "short_name": "Switch O' Matic",
+    "description": "Geração de cheats para emuladores Android de Nintendo Switch.",
+    "start_url": "/omatic/index.html",
+    "display": "standalone",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FFFFFF",
+    "icons": [
+        {
+            "src": "/omatic/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/omatic/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+
+}
