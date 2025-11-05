@@ -3,47 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Switch O' Matic</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- JSZip CDN for ZIP file generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <title>Switch O' Matic - Pager</title>
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip CDN for ZIP file generation --><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        /* Importa a fonte Poppins */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+        /* Importa uma fonte que simula caracteres de tela digital/mono */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        /* Outras opções de fontes: 'Press Start 2P', 'Roboto Mono' */
         
-        /* Estilos globais e fundo vermelho E70009 */
+        /* Definindo as cores do tema */
+        :root {
+            --pager-green: #90EE90; /* Verde limão clássico de pager */
+            --pager-black: #000000;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #E70009; /* Fundo vermelho solicitado */
-            color: #ffffff; /* Texto claro no fundo vermelho */
+            font-family: 'VT323', monospace; /* Fonte monoespaçada para simular o pager */
+            background-color: var(--pager-green); /* Fundo verde limão */
+            color: var(--pager-black); /* Texto preto */
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             padding: 1rem;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1); /* Sombra para dar profundidade ao texto */
         }
 
-        /* Define a cor principal para o foco e interatividade */
-        .switch-red { color: #E70009; }
-        .bg-switch-red { background-color: #E70009; }
-        .border-switch-red { border-color: #E70009; }
-
-        /* Estilo para o container principal (agora vermelho) */
-        .main-card {
-            /* Sombra clara para fazê-lo saltar do fundo */
-            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
-            transition: box-shadow 0.3s ease;
-        }
-        .main-card:hover {
-            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.3);
+        /* Container principal: Sem sombra, como um pager simples */
+        #app {
+            background-color: var(--pager-green); /* Fundo verde limão */
+            border: 5px solid var(--pager-black); /* Borda preta grossa */
+            border-radius: 8px; /* Cantos levemente arredondados */
+            box-shadow: 8px 8px 0px -2px rgba(0,0,0,0.5); /* Sombra dura para efeito 3D antigo */
         }
 
-        /* Estilo de foco para inputs - Borda vermelha forte */
+        /* Estilo para inputs e textarea */
+        input, textarea {
+            background-color: var(--pager-green); /* Fundo verde limão */
+            color: var(--pager-black); /* Texto preto */
+            border: 2px solid var(--pager-black); /* Borda preta */
+            border-radius: 4px;
+            padding: 0.75rem 1rem; /* Padding adequado */
+            font-size: 1.125rem; /* Tamanho de fonte maior para leitura no pager */
+            line-height: 1.5;
+        }
+
+        /* Foco dos inputs: Borda preta sólida, sem ring glow */
         input:focus, textarea:focus {
             outline: none;
-            border-color: #E70009 !important;
-            box-shadow: 0 0 0 2px #E70009;
+            border-color: var(--pager-black);
+            box-shadow: none; /* Sem sombra no foco */
         }
 
         /* Estilização da caixa de mensagem de status */
@@ -51,105 +60,121 @@
             opacity: 0;
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
             transform: translateY(-5px);
-            color: #1a1a1a; /* Texto escuro para legibilidade nas mensagens */
+            background-color: var(--pager-black); /* Fundo preto para destaque */
+            color: var(--pager-green); /* Texto verde limão */
+            border: 2px solid var(--pager-green);
+            font-weight: bold;
         }
         #messageBox.opacity-100 {
             transform: translateY(0);
         }
-        /* Cores de feedback - Usam o vermelho principal e verde para contraste */
+        /* Cores de feedback invertidas para o tema Pager */
         #messageBox.error-style { 
-            background-color: #ffffff; /* Branco para destacar o erro */
-            color: #E70009; 
-            border-left: 5px solid #E70009; 
+            background-color: #ff0000; /* Vermelho forte para erro */
+            color: var(--pager-green); 
+            border: 2px solid var(--pager-green);
         }
         #messageBox.success-style { 
-            background-color: #ccffdd; /* Verde suave para sucesso */
-            color: #057a55; 
-            border-left: 5px solid #10b981; 
+            background-color: #008000; /* Verde forte para sucesso */
+            color: var(--pager-green); 
+            border: 2px solid var(--pager-green);
         }
 
-        /* Estilo para o Textarea de Código (fonte monoespaçada e fundo claro) */
+        /* Estilo para o Textarea de Código (mantém a fonte mono, mas alinhado ao tema) */
         #cheatCode {
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-            padding: 12px;
-            background-color: #f7f7f7;
-            border: 1px solid #e0e0e0;
-            transition: all 0.2s ease;
-            color: #1a1a1a; /* Texto escuro para o código */
+            font-family: 'VT323', monospace;
+            background-color: var(--pager-green);
+            color: var(--pager-black);
         }
 
-        /* Animação de pulso para o ícone (mantida) */
-        @keyframes pulse-icon {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        /* Botão "Cha-Ching!" */
+        #submitButton {
+            background-color: var(--pager-black); /* Fundo preto */
+            color: var(--pager-green); /* Texto verde limão */
+            font-size: 1.5rem; /* Botão maior e mais chamativo */
+            border: 2px solid var(--pager-green); /* Borda verde limão */
+            border-radius: 4px; /* Cantos arredondados */
+            box-shadow: 4px 4px 0px -1px rgba(0,0,0,0.5); /* Sombra dura */
         }
-        .animate-pulse-icon {
-            animation: pulse-icon 2s infinite ease-in-out;
+        #submitButton:hover {
+            background-color: #333333; /* Levemente mais claro no hover */
+            color: #adff2f; /* Verde mais vibrante no hover */
+            transform: none; /* Sem scale no hover para manter o estilo pager */
         }
+        #submitButton:active {
+            box-shadow: 2px 2px 0px -1px rgba(0,0,0,0.5); /* Sombra menor no active */
+            transform: translateY(2px) translateX(2px); /* Efeito de clique */
+        }
+        #submitButton:disabled {
+            background-color: #333333;
+            color: #666666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Classes Tailwind personalizadas (se necessário, estender no config) */
+        .text-pager-green { color: var(--pager-green); }
+        .bg-pager-green { background-color: var(--pager-green); }
+        .border-pager-green { border-color: var(--pager-green); }
+
+        .text-pager-black { color: var(--pager-black); }
+        .bg-pager-black { background-color: var(--pager-black); }
+        .border-pager-black { border-color: var(--pager-black); }
+
     </style>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'switch-red': '#E70009',
+                        'pager-green': '#90EE90',
+                        'pager-black': '#000000',
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="selection:bg-white selection:text-switch-red">
+<body class="selection:bg-pager-black selection:text-pager-green">
 
-    <!-- Main Container: Agora usa a cor Switch Red E70009 com sombra branca para destaque -->
-    <div id="app" class="w-full max-w-md bg-switch-red main-card rounded-2xl p-6 md:p-8">
+    <!-- Main Container: Agora com estilo de Pager --><div id="app" class="w-full max-w-md p-6 md:p-8">
         
-        <!-- Header (Limpo e elegante) -->
-        <header class="text-center mb-8">
-            <img src="icon-192x192.png" alt="Switch O' Matic Logo" class="w-20 h-20 mx-auto mb-4 animate-pulse-icon drop-shadow-md">
-            <h1 class="text-4xl font-extrabold text-white tracking-tight">
+        <!-- Header (Simples e direto, sem logo) --><header class="text-center mb-8">
+            <h1 class="text-5xl font-bold uppercase mb-2 leading-none">
                 Switch O' Matic
             </h1>
-            <p class="text-white mt-1 font-medium text-sm opacity-90">Gerador de Cheats Estruturado</p>
+            <p class="text-xl font-medium">-- Pager Edition --</p>
         </header>
 
-        <!-- Form Area -->
-        <form id="cheatForm" onsubmit="handleChaChing(event)">
+        <!-- Form Area --><form id="cheatForm" onsubmit="handleChaChing(event)">
 
-            <!-- Status/Error Message Area -->
-            <div id="messageBox" class="p-3 mb-6 hidden rounded-lg text-sm font-medium transition-all duration-300"></div>
+            <!-- Status/Error Message Area --><div id="messageBox" class="p-3 mb-6 hidden rounded-lg text-lg text-center transition-all duration-300"></div>
 
-            <!-- Game ID Input -->
-            <div class="mb-5">
-                <label for="gameId" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">ID do Jogo (16 dígitos Hex)</label>
-                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: 0100ABCD00001000" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800 focus:border-switch-red" oninput="validateId(this)">
-                <p id="gameIdError" class="text-xs text-white mt-1 font-medium hidden" style="text-shadow: 0 0 5px rgba(0,0,0,0.5);">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+            <!-- Game ID Input --><div class="mb-5">
+                <label for="gameId" class="block text-base font-bold uppercase mb-1">ID DO JOGO (16 DIGITOS HEX)</label>
+                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="0100ABCD00001000" class="w-full" oninput="validateId(this)">
+                <p id="gameIdError" class="text-base font-bold mt-1 hidden text-red-500">ID DEVE TER 16 DIGITOS HEXADECIMAIS!</p>
             </div>
 
-            <!-- Update ID Input -->
-            <div class="mb-5">
-                <label for="updateId" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">ID de Update (16 dígitos Hex)</label>
-                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Ex: F719A700588E2BCF" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800 focus:border-switch-red" oninput="validateId(this)">
-                <p id="updateIdError" class="text-xs text-white mt-1 font-medium hidden" style="text-shadow: 0 0 5px rgba(0,0,0,0.5);">O ID deve ter exatamente 16 dígitos hexadecimais.</p>
+            <!-- Update ID Input --><div class="mb-5">
+                <label for="updateId" class="block text-base font-bold uppercase mb-1">ID DE UPDATE (16 DIGITOS HEX)</label>
+                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="F719A700588E2BCF" class="w-full" oninput="validateId(this)">
+                <p id="updateIdError" class="text-base font-bold mt-1 hidden text-red-500">ID DEVE TER 16 DIGITOS HEXADECIMAIS!</p>
             </div>
 
-            <!-- Cheat Name Input -->
-            <div class="mb-5">
-                <label for="cheatName" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">Nome do Cheat</label>
-                <input type="text" id="cheatName" name="cheatName" required placeholder="Ex: Vida Infinita" class="w-full px-4 py-3 border border-gray-300 rounded-xl transition duration-150 text-gray-800 focus:border-switch-red">
+            <!-- Cheat Name Input --><div class="mb-5">
+                <label for="cheatName" class="block text-base font-bold uppercase mb-1">NOME DO CHEAT</label>
+                <input type="text" id="cheatName" name="cheatName" required placeholder="VIDA INFINITA" class="w-full">
             </div>
 
-            <!-- Cheat Code Textarea -->
-            <div class="mb-8">
-                <label for="cheatCode" class="block text-xs font-semibold uppercase text-white mb-1 opacity-80">Código do Cheat</label>
-                <!-- O input tem cor escura para legibilidade do código -->
-                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="Insira seu código do cheat aqui. Ex: 580F0000 05B00000..." class="w-full rounded-xl transition duration-150 resize-y"></textarea>
+            <!-- Cheat Code Textarea --><div class="mb-8">
+                <label for="cheatCode" class="block text-base font-bold uppercase mb-1">CODIGO DO CHEAT</label>
+                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="INSIRA SEU CODIGO AQUI. EX: 580F0000 05B00000..." class="w-full resize-none"></textarea>
             </div>
 
-            <!-- Submit Button (Usamos uma cor contrastante para o botão, como um cinza escuro) -->
-            <button type="submit" id="submitButton" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-black/40 hover:bg-black transition duration-200 transform hover:scale-[1.01] flex items-center justify-center active:scale-[0.98] focus:ring-4 focus:ring-white/50 focus:outline-none">
-                <span id="buttonText" class="text-lg">Cha-Ching!</span>
-                <div id="spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+            <!-- Submit Button (Preto com texto verde) --><button type="submit" id="submitButton" class="w-full font-bold py-4 transition duration-150 flex items-center justify-center">
+                <span id="buttonText">CHA-CHING!</span>
+                <div id="spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-pager-green ml-2"></div>
             </button>
         </form>
 
@@ -183,13 +208,13 @@
             // Verificar o comprimento final
             if (input.value.length !== 16) {
                 errorElement.classList.remove('hidden');
-                input.classList.remove('border-green-500');
-                input.classList.add('border-switch-red'); // Destacar o erro
+                // input.classList.remove('border-green-500'); // Remover validação visual de sucesso
+                input.classList.add('border-red-500'); // Usar vermelho para erro no input
                 return false;
             } else {
                 errorElement.classList.add('hidden');
-                input.classList.remove('border-switch-red', 'border-gray-300');
-                input.classList.add('border-green-500'); // Indicador de sucesso
+                input.classList.remove('border-red-500');
+                input.classList.add('border-pager-black'); // Borda preta normal quando válido
                 return true;
             }
         }
@@ -226,15 +251,15 @@
         function setLoading(isLoading) {
             submitButton.disabled = isLoading;
             if (isLoading) {
-                buttonText.textContent = 'Gerando ZIP...';
+                buttonText.textContent = 'GERANDO ZIP...';
                 spinner.classList.remove('hidden');
                 submitButton.classList.add('bg-gray-700', 'cursor-not-allowed', 'shadow-none');
-                submitButton.classList.remove('bg-gray-900', 'shadow-black/40', 'hover:bg-black');
+                submitButton.classList.remove('bg-pager-black', 'shadow-lg', 'hover:bg-black');
             } else {
-                buttonText.textContent = 'Cha-Ching!';
+                buttonText.textContent = 'CHA-CHING!';
                 spinner.classList.add('hidden');
                 submitButton.classList.remove('bg-gray-700', 'cursor-not-allowed', 'shadow-none');
-                submitButton.classList.add('bg-gray-900', 'shadow-black/40', 'hover:bg-black');
+                submitButton.classList.add('bg-pager-black', 'shadow-lg', 'hover:bg-black');
             }
         }
 
@@ -249,15 +274,15 @@
 
             const gameId = document.getElementById('gameId').value.toUpperCase();
             const updateId = document.getElementById('updateId').value.toUpperCase();
-            const cheatName = document.getElementById('cheatName').value;
-            const cheatCode = document.getElementById('cheatCode').value;
+            const cheatName = document.getElementById('cheatName').value.toUpperCase(); // Tudo maiúsculo para o estilo pager
+            const cheatCode = document.getElementById('cheatCode').value.toUpperCase(); // Tudo maiúsculo
 
             // 1. Validação final
             const isGameIdValid = validateId(document.getElementById('gameId'));
             const isUpdateIdValid = validateId(document.getElementById('updateId'));
             
             if (!isGameIdValid || !isUpdateIdValid || !cheatName || !cheatCode) {
-                showMessage('Por favor, preencha todos os campos e corrija os IDs de 16 dígitos.', 'error');
+                showMessage('ERRO! PREENCHA TODOS OS CAMPOS E CORRIJA OS IDS.', 'error');
                 setLoading(false);
                 return;
             }
@@ -295,11 +320,11 @@
                 
                 URL.revokeObjectURL(url);
 
-                showMessage(`Arquivo "${downloadFileName}" gerado e baixado com sucesso!`, 'success');
+                showMessage(`SUCESSO! ARQUIVO "${downloadFileName}" GERADO E BAIXADO.`, 'success');
                 
             } catch (error) {
                 console.error("Erro ao gerar ou baixar o arquivo ZIP:", error);
-                showMessage('Ocorreu um erro inesperado ao gerar o arquivo. Tente novamente.', 'error');
+                showMessage('ERRO! OCORREU UM ERRO INESPERADO AO GERAR O ARQUIVO. TENTE NOVAMENTE.', 'error');
             } finally {
                 setLoading(false);
             }
