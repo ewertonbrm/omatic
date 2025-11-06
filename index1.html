@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switch O' Matic - MENU</title>
+    <!-- Adiciona link para o manifest para tornar o app instalável -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Importa uma fonte que simula caracteres de tela digital/mono */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        /* Definindo as cores do tema */
+        :root {
+            --pager-green: #90EE90; /* Verde limão clássico de pager */
+            --pager-black: #000000;
+        }
+
+        body {
+            font-family: 'VT323', monospace; /* Fonte monoespaçada para simular o pager */
+            background-color: var(--pager-green); /* Fundo verde limão */
+            color: var(--pager-black); /* Texto preto */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1); /* Sombra para dar profundidade ao texto */
+        }
+
+        /* Container principal: Menu */
+        #app {
+            background-color: var(--pager-green); /* Fundo verde limão */
+            border: 5px solid var(--pager-black); /* Borda preta grossa */
+            border-radius: 8px; /* Cantos levemente arredondados */
+            box-shadow: 8px 8px 0px -2px rgba(0,0,0,0.5); /* Sombra dura para efeito 3D antigo */
+            padding: 2rem;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        /* Título */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        /* Lista de Opções (Menu) */
+        .menu-options {
+            list-style: none; /* Remove bullet points */
+            padding: 0;
+        }
+
+        .menu-options li {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .menu-options a {
+            color: var(--pager-black);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid transparent; /* Linha sutil para interação */
+            transition: border-bottom 0.1s;
+        }
+        
+        /* Efeito de destaque ao passar o mouse */
+        .menu-options a:hover, .menu-options a:focus {
+            color: #ff0000; /* Destaque em vermelho para contraste */
+            border-bottom: 2px solid var(--pager-black);
+        }
+
+        .menu-options a::before {
+            content: ">";
+            margin-right: 10px;
+        }
+        
+    </style>
+    <script>
+        // Lógica de Registro do Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('SW registrado com sucesso. Escopo:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Falha no registro do SW:', error);
+                    });
+            });
+        }
+    </script>
+</head>
+<body class="selection:bg-pager-black selection:text-pager-green">
+
+    <div id="app">
+        
+        <header>
+            <h1>SWITCH O' MATIC</h1>
+        </header>
+
+        <p class="text-center text-xl mb-6 font-medium">-- ESCOLHA SUA FERRAMENTA --</p>
+
+        <ul class="menu-options">
+            <li><a href="index2.html">Gerador de Arquivos (.zip)</a></li>
+            <li><a href="index3.html">Base de Cheats HamletDuFromage</a></li>
+        </ul>
+    </div>
+
+</body>
+</html>
+
