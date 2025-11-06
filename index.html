@@ -13,7 +13,7 @@
         
         /* Definindo as cores do tema */
         :root {
-            --pager-green: #ADD657; /* Verde limão clássico de pager */
+            --pager-green: #90EE90; /* Verde limão clássico de pager (Corrigido para o tom consistente) */
             --pager-black: #000000;
         }
 
@@ -58,23 +58,27 @@
 
         .menu-options li {
             font-size: 1.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem; /* Reduz margem para itens mais juntos */
             text-transform: uppercase;
         }
 
         .menu-options a {
             color: var(--pager-black);
             text-decoration: none;
-            display: block;
-            padding: 0.5rem 0;
-            border-bottom: 2px solid transparent; /* Linha sutil para interação */
-            transition: border-bottom 0.1s;
+            display: inline-block; /* Permite que o fundo e a sombra se ajustem ao texto */
+            padding: 0.2rem 0.5rem; /* Padding horizontal e vertical para o efeito de fundo */
+            margin-left: -0.5rem; /* Compensar o padding para manter o alinhamento */
+            transition: all 0.1s ease-in-out;
+            position: relative;
+            z-index: 1; /* Garante que o link esteja acima da sombra */
         }
         
-        /* Efeito de destaque ao passar o mouse */
+        /* Efeito de destaque no hover/focus: Linha sombreada/fundo sólido */
         .menu-options a:hover, .menu-options a:focus {
-            color: #ff0000; /* Destaque em vermelho para contraste */
-            border-bottom: 2px solid var(--pager-black);
+            color: var(--pager-green); /* Inverte a cor do texto para o verde limão */
+            background-color: var(--pager-black); /* Fundo sólido preto para o efeito de seleção */
+            outline: none; /* Remove o outline padrão do focus */
+            box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.5); /* Sombra preta dura para profundidade de "pixel" */
         }
 
         .menu-options a::before {
