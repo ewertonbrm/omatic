@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Arquivos - Pager</title>
+    <!-- Adiciona link para o manifest para tornar o app instalável -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip CDN for ZIP file generation --><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        /* Importa uma fonte que simula caracteres de tela digital/mono */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        /* Definindo as cores do tema (Ajustado para o seu último verde limão) */
+        :root {
+            --pager-green: #90EE90;
+            --pager-black: #000000;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background-color: var(--pager-green);
+            color: var(--pager-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+        }
+
+        /* Container principal: Sem sombra, como um pager simples */
+        #app {
+            background-color: var(--pager-green);
+            border: 5px solid var(--pager-black);
+            border-radius: 8px;
+            box-shadow: 8px 8px 0px -2px rgba(0,0,0,0.5);
+        }
+
+        /* Estilo para inputs e textarea */
+        input, textarea {
+            background-color: var(--pager-green);
+            color: var(--pager-black);
+            border: 2px solid var(--pager-black);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            font-size: 1.125rem;
+            line-height: 1.5;
+        }
+
+        /* Foco dos inputs: Borda preta sólida, sem ring glow */
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--pager-black);
+            box-shadow: none;
+        }
+
+        /* Estilização da caixa de mensagem de status */
+        #messageBox {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-5px);
+            background-color: var(--pager-black); /* Fundo preto para destaque */
+            color: var(--pager-green); /* Texto verde limão */
+            border: 2px solid var(--pager-green);
+            font-weight: bold;
+        }
+        #messageBox.opacity-100 {
+            transform: translateY(0);
+        }
+        /* Cores de feedback invertidas para o tema Pager */
+        #messageBox.error-style { 
+            background-color: #ff0000; /* Vermelho forte para erro */
+            color: var(--pager-green); 
+            border: 2px solid var(--pager-green);
+        }
+        #messageBox.success-style { 
+            background-color: #008000; /* Verde forte para sucesso */
+            color: var(--pager-green); 
+            border: 2px solid var(--pager-green);
+        }
+
+        /* Estilo para o Textarea de Código (mantém a fonte mono, mas alinhado ao tema) */
+        #cheatCode {
+            font-family: 'VT323', monospace;
+            background-color: var(--pager-green);
+            color: var(--pager-black);
+        }
+
+        /* Botão "Cha-Ching!" */
+        #submitButton {
+            background-color: var(--pager-black); /* Fundo preto */
+            color: var(--pager-green); /* Texto verde limão */
+            font-size: 1.5rem; /* Botão maior e mais chamativo */
+            border: 2px solid var(--pager-green); /* Borda verde limão */
+            border-radius: 4px; /* Cantos arredondados */
+            box-shadow: 4px 4px 0px -1px rgba(0,0,0,0.5); /* Sombra dura */
+        }
+        #submitButton:hover {
+            background-color: #333333; /* Levemente mais claro no hover */
+            color: #adff2f; /* Verde mais vibrante no hover */
+            transform: none; /* Sem scale no hover para manter o estilo pager */
+        }
+        #submitButton:active {
+            box-shadow: 2px 2px 0px -1px rgba(0,0,0,0.5); /* Sombra menor no active */
+            transform: translateY(2px) translateX(2px); /* Efeito de clique */
+        }
+        #submitButton:disabled {
+            background-color: #333333;
+            color: #666666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        /* Botão Voltar (Novo) */
+        #backButton {
+            background-color: #999;
+            color: var(--pager-black);
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--pager-black);
+            border-radius: 4px;
+            box-shadow: 2px 2px 0px -1px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        /* Classes Tailwind personalizadas (se necessário, estender no config) */
+        .text-pager-green { color: var(--pager-green); }
+        .bg-pager-green { background-color: var(--pager-green); }
+        .border-pager-green { border-color: var(--pager-green); }
+
+        .text-pager-black { color: var(--pager-black); }
+        .bg-pager-black { background-color: var(--pager-black); }
+        .border-pager-black { border-color: var(--pager-black); }
+
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pager-green': '#90EE90',
+                        'pager-black': '#000000',
+                    }
+                }
+            }
+        }
+
+        // ------------------ REGISTRO DO SERVICE WORKER ------------------
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('SW registrado com sucesso. Escopo:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Falha no registro do SW:', error);
+                    });
+            });
+        }
+        // ----------------------------------------------------------------
+        
+        // Variáveis globais para referências de UI
+        const messageBox = document.getElementById('messageBox');
+        const submitButton = document.getElementById('submitButton');
+        const buttonText = document.getElementById('buttonText');
+        const spinner = document.getElementById('spinner');
+
+        /**
+         * Função de validação em tempo real para os campos de 16 dígitos.
+         * @param {HTMLInputElement} input - O elemento de input a ser validado.
+         */
+        function validateId(input) {
+            const errorElement = document.getElementById(`${input.id}Error`);
+            const hexRegex = /^[0-9A-Fa-f]{0,16}$/;
+            const value = input.value.toUpperCase();
+
+            let filteredValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (hexRegex.test(value.substring(0, i + 1))) {
+                    filteredValue += value[i];
+                }
+            }
+            input.value = filteredValue.substring(0, 16);
+
+            if (input.value.length !== 16) {
+                errorElement.classList.remove('hidden');
+                input.classList.add('border-red-500');
+                return false;
+            } else {
+                errorElement.classList.add('hidden');
+                input.classList.remove('border-red-500');
+                input.classList.add('border-pager-black');
+                return true;
+            }
+        }
+
+        /**
+         * Exibe uma mensagem de feedback na caixa de mensagens.
+         */
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'error-style', 'success-style', 'opacity-0');
+            
+            if (type === 'error') {
+                messageBox.classList.add('error-style');
+                messageBox.classList.remove('success-style');
+            } else {
+                messageBox.classList.add('success-style');
+                messageBox.classList.remove('error-style');
+            }
+            messageBox.classList.add('opacity-100');
+
+            setTimeout(() => {
+                messageBox.classList.remove('opacity-100');
+                setTimeout(() => messageBox.classList.add('hidden'), 300);
+            }, 5000);
+        }
+
+        /**
+         * Controla o estado de carregamento do botão.
+         */
+        function setLoading(isLoading) {
+            submitButton.disabled = isLoading;
+            if (isLoading) {
+                buttonText.textContent = 'GERANDO ZIP...';
+                spinner.classList.remove('hidden');
+                submitButton.classList.add('bg-gray-700', 'cursor-not-allowed', 'shadow-none');
+                submitButton.classList.remove('bg-pager-black', 'shadow-lg', 'hover:bg-black');
+            } else {
+                buttonText.textContent = 'CHA-CHING!';
+                spinner.classList.add('hidden');
+                submitButton.classList.remove('bg-gray-700', 'cursor-not-allowed', 'shadow-none');
+                submitButton.classList.add('bg-pager-black', 'shadow-lg', 'hover:bg-black');
+            }
+        }
+
+        /**
+         * Lida com o envio do formulário, cria a estrutura ZIP e inicia o download.
+         */
+        async function handleChaChing(event) {
+            event.preventDefault();
+            setLoading(true);
+            messageBox.classList.add('hidden'); 
+
+            const gameId = document.getElementById('gameId').value.toUpperCase();
+            const updateId = document.getElementById('updateId').value.toUpperCase();
+            const cheatName = document.getElementById('cheatName').value.toUpperCase();
+            const cheatCode = document.getElementById('cheatCode').value.toUpperCase();
+
+            const isGameIdValid = validateId(document.getElementById('gameId'));
+            const isUpdateIdValid = validateId(document.getElementById('updateId'));
+            
+            if (!isGameIdValid || !isUpdateIdValid || !cheatName || !cheatCode) {
+                showMessage('ERRO! PREENCHA TODOS OS CAMPOS E CORRIJA OS IDS.', 'error');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const zip = new JSZip();
+
+                const fileContent = `[${cheatName}]\n${cheatCode.trim()}`;
+
+                const zipPath = `${gameId}/${cheatName}/cheats/${updateId}.txt`;
+                
+                zip.file(zipPath, fileContent);
+
+                const content = await zip.generateAsync({
+                    type: "blob",
+                    compression: "DEFLATE", 
+                    compressionOptions: { level: 9 }
+                });
+
+                const downloadFileName = `${gameId}.zip`;
+                
+                const a = document.createElement('a');
+                const url = URL.createObjectURL(content);
+                a.href = url;
+                a.download = downloadFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                URL.revokeObjectURL(url);
+
+                showMessage(`SUCESSO! ARQUIVO "${downloadFileName}" GERADO E BAIXADO.`, 'success');
+                
+            } catch (error) {
+                console.error("Erro ao gerar ou baixar o arquivo ZIP:", error);
+                showMessage('ERRO! OCORREU UM ERRO INESPERADO AO GERAR O ARQUIVO. TENTE NOVAMENTE.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById('gameId').addEventListener('input', function() { validateId(this); });
+            document.getElementById('updateId').addEventListener('input', function() { validateId(this); });
+            messageBox.classList.add('hidden');
+        };
+    </script>
+</head>
+<body class="selection:bg-pager-black selection:text-pager-green">
+    <div class="absolute top-4 left-4">
+        <button id="backButton" onclick="window.location.href='index.html'">MENU INICIAL</button>
+    </div>
+    
+    <div id="app" class="w-full max-w-md p-6 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold uppercase mb-2 leading-none">
+                GERADOR DE ARQUIVOS
+            </h1>
+            <p class="text-xl font-medium">-- ESTRUTURA ZIP --</p>
+        </header>
+
+        <form id="cheatForm" onsubmit="handleChaChing(event)">
+
+            <div id="messageBox" class="p-3 mb-6 hidden rounded-lg text-lg text-center transition-all duration-300"></div>
+
+            <div class="mb-5">
+                <label for="gameId" class="block text-base font-bold uppercase mb-1">ID DO JOGO (16 DIGITOS HEX)</label>
+                <input type="text" id="gameId" name="gameId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="0100ABCD00001000" class="w-full" oninput="validateId(this)">
+                <p id="gameIdError" class="text-base font-bold mt-1 hidden text-red-500">ID DEVE TER 16 DIGITOS HEXADECIMAIS!</p>
+            </div>
+
+            <div class="mb-5">
+                <label for="updateId" class="block text-base font-bold uppercase mb-1">ID DE UPDATE (16 DIGITOS HEX)</label>
+                <input type="text" id="updateId" name="updateId" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="F719A700588E2BCF" class="w-full" oninput="validateId(this)">
+                <p id="updateIdError" class="text-base font-bold mt-1 hidden text-red-500">ID DEVE TER 16 DIGITOS HEXADECIMAIS!</p>
+            </div>
+
+            <div class="mb-5">
+                <label for="cheatName" class="block text-base font-bold uppercase mb-1">NOME DO CHEAT</label>
+                <input type="text" id="cheatName" name="cheatName" required placeholder="VIDA INFINITA" class="w-full">
+            </div>
+
+            <div class="mb-8">
+                <label for="cheatCode" class="block text-base font-bold uppercase mb-1">CODIGO DO CHEAT</label>
+                <textarea id="cheatCode" name="cheatCode" required rows="6" placeholder="INSIRA SEU CODIGO AQUI. EX: 580F0000 05B00000..." class="w-full resize-none"></textarea>
+            </div>
+
+            <button type="submit" id="submitButton" class="w-full font-bold py-4 transition duration-150 flex items-center justify-center">
+                <span id="buttonText">CHA-CHING!</span>
+                <div id="spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-pager-green ml-2"></div>
+            </button>
+        </form>
+
+    </div>
+
+</body>
+</html>
+
