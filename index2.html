@@ -115,8 +115,8 @@
         
         /* Botão Voltar (Novo) */
         #backButton {
-            background-color: #999;
-            color: var(--pager-black);
+            background-color: #000000;
+            color: var(--pager-green);
             font-size: 1rem;
             padding: 0.5rem 1rem;
             border: 2px solid var(--pager-black);
@@ -141,7 +141,7 @@
             theme: {
                 extend: {
                     colors: {
-                        'pager-green': '#90EE90',
+                        'pager-green': '#ADD657',
                         'pager-black': '#000000',
                     }
                 }
@@ -305,16 +305,16 @@
 </head>
 <body class="selection:bg-pager-black selection:text-pager-green">
     <div class="absolute top-4 left-4">
-        <button id="backButton" onclick="window.location.href='index.html'">MENU INICIAL</button>
+        <button id="backButton" onclick="window.location.href='index.html'">MENU</button>
     </div>
     
     <div id="app" class="w-full max-w-md p-6 md:p-8">
         
         <header class="text-center mb-8">
             <h1 class="text-5xl font-bold uppercase mb-2 leading-none">
-                GERADOR DE ARQUIVOS
+                SWITCH O' MATIC
             </h1>
-            <p class="text-xl font-medium">-- ESTRUTURA ZIP --</p>
+            <p class="text-xl font-medium">-- GERADOR DE ARQUIVOS --</p>
         </header>
 
         <form id="cheatForm" onsubmit="handleChaChing(event)">
