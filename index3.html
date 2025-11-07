@@ -343,12 +343,23 @@
                     if (cheats.hasOwnProperty(cheatNameWithBrackets)) {
                         let cheatContent = cheats[cheatNameWithBrackets];
                         
-                        // Adiciona o nome do cheat (MAIÚSCULAS)
+                        // 1. Adiciona o nome do cheat (MAIÚSCULAS) - Titulo limpo.
                         output += `${cheatNameWithBrackets.toUpperCase()}\n`; 
                         
-                        // Adiciona o conteúdo do cheat SEM MODIFICAR NADA (preserva a primeira linha, espaços e quebras)
-                        // Apenas converte para MAIÚSCULAS.
-                        output += `${cheatContent.toUpperCase()}\n`;
+                        // 2. Remove o nome do cheat duplicado encontrando a primeira quebra de linha.
+                        const firstNewlineIndex = cheatContent.indexOf('\n');
+                        let contentWithoutTitle = '';
+
+                        if (firstNewlineIndex !== -1) {
+                            // Pega a string a partir do caractere após a primeira quebra de linha (removendo o título).
+                            contentWithoutTitle = cheatContent.substring(firstNewlineIndex + 1).trimStart();
+                        }
+                        // O .trimStart() é usado aqui para remover possíveis espaços em branco extras no início do código, 
+                        // mas não remove as quebras de linha internas que você deseja manter.
+
+                        // 3. Adiciona o conteúdo restante (apenas códigos/instruções)
+                        // Apenas converte para MAIÚSCULAS e adiciona uma linha em branco para separar os blocos.
+                        output += `${contentWithoutTitle.toUpperCase()}\n\n`;
                     }
                 }
                 output += `\n`; // Adiciona uma linha em branco após cada bloco de Build ID
