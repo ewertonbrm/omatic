@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Switch O' Matic - Base Hamlet</title>
     
-    <!-- Link para o manifest e ícone (necessário para PWA) -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192x192.png"> 
 
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -215,7 +213,6 @@
     </style>
 </head>
 <body class="selection:bg-pager-black selection:text-pager-green">
-    <!-- Botão de Volta para o Menu Principal -->
     <div class="absolute top-4 left-4">
         <button id="backButton" onclick="window.location.href='index.html'">MENU</button>
     </div>
@@ -235,7 +232,6 @@
         <p id="statusMessage" class="status"></p>
     </div>
 
-    <!-- Modal de Pré-visualização -->
     <div id="previewModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closePreview">&times;</span>
@@ -291,14 +287,21 @@
             // Esta chave é um Build ID de 16 dígitos hexadecimais
             const cheatBlockKey = Object.keys(cheatData).find(key => key.length === 16 && key.match(/^[0-9A-F]+$/i));
             
+            // --- CÓDIGO DE TRATAMENTO DE ERRO/FALLBACK ---
             if (!cheatBlockKey) {
-                output += `ERRO: NAO FOI POSSIVEL IDENTIFICAR O BLOCO DE CHEATS POR BUILD ID NO JSON.\n\n`;
-                // Retorna o JSON bruto como fallback (em MAIUSCULAS)
+                output += `ERRO: NAO FOI POSSIVEL IDENTIFICAR O BLOCO DE CHEATS POR BUILD ID NO JSON.\n`;
+                output += `VERIFIQUE O FORMATO DO ARQUIVO.\n\n`;
+                // Inclui o ID e o Título do Jogo mesmo em caso de erro para fins de debug/identificação
+                gameTitle = cheatData.attribution && cheatData.attribution.name ? cheatData.attribution.name.split(' by ')[0].trim().toUpperCase() : gameId;
+                output += `[${gameTitle}]\n`;
+                output += `[${gameId}]\n\n`;
+                output += '--- CONTEUDO JSON BRUTO (FALLBACK) ---\n';
+                // Retorna o JSON bruto (em MAIUSCULAS) se o bloco de cheats principal não for encontrado
                 return output + JSON.stringify(cheatData, null, 2).toUpperCase();
             }
 
             const cheats = cheatData[cheatBlockKey];
-
+            
             // 2. Tenta obter o nome do jogo
             if (cheatData.attribution && cheatData.attribution.name) {
                 gameTitle = cheatData.attribution.name.split(' by ')[0].trim().toUpperCase();
@@ -314,21 +317,39 @@
             // 3. Adicionar Título do Jogo e ID (Formato EdiZon)
             output += `[${gameTitle}]\n`;
             output += `[${gameId}]\n\n`;
+            
+            // 4. Adicionar Informações de Atribuição (Fonte e Autor)
+            if (cheatData.attribution) {
+                output += `--- ATRIBUICAO ---\n`;
+                // Itera sobre todas as chaves de atribuição e as formata
+                for (const key in cheatData.attribution) {
+                    if (cheatData.attribution.hasOwnProperty(key)) {
+                        output += `${key.toUpperCase()}: ${cheatData.attribution[key].toUpperCase()}\n`;
+                    }
+                }
+                output += `----------------\n\n`;
+            }
 
-            // 4. Iterar sobre os cheats no bloco e formatar
+            // 5. Adicionar Notas Gerais (se houver)
+            if (cheatData.notes) {
+                output += `--- NOTAS GERAIS ---\n`;
+                output += `${cheatData.notes.toUpperCase()}\n`;
+                output += `--------------------\n\n`;
+            }
+
+            // 6. Iterar sobre os cheats no bloco e formatar
             for (const cheatNameWithBrackets in cheats) {
                 if (cheats.hasOwnProperty(cheatNameWithBrackets)) {
                     let cheatContent = cheats[cheatNameWithBrackets];
                     
-                    // Remove a linha que repete o nome do cheat no início do código
-                    cheatContent = cheatContent.replace(cheatNameWithBrackets + '\n', '');
+                    // Adiciona o bloco ao resultado final.
+                    // Garante que o nome do cheat esteja em MAIÚSCULAS e com seus colchetes.
+                    output += `${cheatNameWithBrackets.toUpperCase()}\n`; 
                     
-                    // Remove quebras de linha extras no final e normaliza
-                    cheatContent = cheatContent.trim();
-                    
-                    // Adiciona o bloco ao resultado final, tudo em MAIÚSCULAS para o estilo PAGER
-                    output += `${cheatNameWithBrackets.toUpperCase()}\n`; // Usa o nome com colchetes
-                    output += `${cheatContent.toUpperCase()}\n\n`;
+                    // Adiciona o conteúdo do cheat. O trim() remove espaços em branco/quebras de linha desnecessárias 
+                    // no início e no fim, mas preserva as quebras de linha internas para manter a legibilidade do código.
+                    // Tudo em MAIÚSCULAS para o estilo PAGER.
+                    output += `${cheatContent.trim().toUpperCase()}\n\n`;
                 }
             }
 
@@ -429,4 +450,3 @@
     </script>
 </body>
 </html>
-
