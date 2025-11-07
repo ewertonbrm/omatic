@@ -283,32 +283,28 @@
             let output = '';
             let gameTitle = 'UNKNOWN GAME TITLE';
             
-            // 1. Encontrar o bloco de cheats principal (o que tem a chave do Build ID)
-            // Esta chave é um Build ID de 16 dígitos hexadecimais
-            const cheatBlockKey = Object.keys(cheatData).find(key => key.length === 16 && key.match(/^[0-9A-F]+$/i));
+            // 1. Encontrar todas as chaves que são Build IDs (16 dígitos hex)
+            const buildIdKeys = Object.keys(cheatData).filter(key => key.length === 16 && key.match(/^[0-9A-F]+$/i));
             
             // --- CÓDIGO DE TRATAMENTO DE ERRO/FALLBACK ---
-            if (!cheatBlockKey) {
-                output += `ERRO: NAO FOI POSSIVEL IDENTIFICAR O BLOCO DE CHEATS POR BUILD ID NO JSON.\n`;
+            if (buildIdKeys.length === 0) {
+                output += `ERRO: NAO FOI POSSIVEL IDENTIFICAR NENHUM BLOCO DE CHEATS (BUILD ID) NO JSON.\n`;
                 output += `VERIFIQUE O FORMATO DO ARQUIVO.\n\n`;
-                // Inclui o ID e o Título do Jogo mesmo em caso de erro para fins de debug/identificação
-                gameTitle = cheatData.attribution && cheatData.attribution.name ? cheatData.attribution.name.split(' by ')[0].trim().toUpperCase() : gameId;
+                gameTitle = gameId;
                 output += `[${gameTitle}]\n`;
                 output += `[${gameId}]\n\n`;
                 output += '--- CONTEUDO JSON BRUTO (FALLBACK) ---\n';
-                // Retorna o JSON bruto (em MAIUSCULAS) se o bloco de cheats principal não for encontrado
                 return output + JSON.stringify(cheatData, null, 2).toUpperCase();
             }
 
-            const cheats = cheatData[cheatBlockKey];
-            
             // 2. Tenta obter o nome do jogo
-            if (cheatData.attribution && cheatData.attribution.name) {
-                gameTitle = cheatData.attribution.name.split(' by ')[0].trim().toUpperCase();
-            } else if (cheatData.attribution) {
-                const fileNameKey = Object.keys(cheatData.attribution).find(key => key.endsWith('.txt'));
-                if (fileNameKey) {
-                     gameTitle = fileNameKey.split(' ver ')[0].trim().toUpperCase();
+            if (cheatData.attribution) {
+                // Tenta extrair o nome do jogo da chave de atribuição mais provável
+                const longKey = Object.keys(cheatData.attribution).find(key => key.includes('ver'));
+                if (longKey) {
+                     gameTitle = longKey.split(' ver ')[0].trim().toUpperCase();
+                } else if (cheatData.attribution["WARRIORS OROCHI 4.txt"]) {
+                    gameTitle = "WARRIORS OROCHI 4";
                 }
             } else {
                  gameTitle = gameId; // Usa o ID do jogo como título se nada for encontrado
@@ -318,40 +314,46 @@
             output += `[${gameTitle}]\n`;
             output += `[${gameId}]\n\n`;
             
-            // 4. Adicionar Informações de Atribuição (Fonte e Autor)
+            // 4. Adicionar Informações de Atribuição (Inclui o texto completo da atribuição)
             if (cheatData.attribution) {
-                output += `--- ATRIBUICAO ---\n`;
-                // Itera sobre todas as chaves de atribuição e as formata
+                output += `--- ATRIBUICAO COMPLETA (CRÉDITOS E FONTES) ---\n\n`;
                 for (const key in cheatData.attribution) {
                     if (cheatData.attribution.hasOwnProperty(key)) {
-                        output += `${key.toUpperCase()}: ${cheatData.attribution[key].toUpperCase()}\n`;
+                        output += `[FONTE/ARQUIVO: ${key.toUpperCase()}]\n`;
+                        // Adiciona o conteúdo do attribution com todas as quebras de linha preservadas
+                        output += `${cheatData.attribution[key].toUpperCase().trim()}\n\n`;
                     }
                 }
-                output += `----------------\n\n`;
+                output += `----------------------------------------------\n\n`;
             }
 
             // 5. Adicionar Notas Gerais (se houver)
             if (cheatData.notes) {
                 output += `--- NOTAS GERAIS ---\n`;
-                output += `${cheatData.notes.toUpperCase()}\n`;
+                output += `${cheatData.notes.toUpperCase().trim()}\n`;
                 output += `--------------------\n\n`;
             }
 
-            // 6. Iterar sobre os cheats no bloco e formatar
-            for (const cheatNameWithBrackets in cheats) {
-                if (cheats.hasOwnProperty(cheatNameWithBrackets)) {
-                    let cheatContent = cheats[cheatNameWithBrackets];
-                    
-                    // Adiciona o bloco ao resultado final.
-                    // Garante que o nome do cheat esteja em MAIÚSCULAS e com seus colchetes.
-                    output += `${cheatNameWithBrackets.toUpperCase()}\n`; 
-                    
-                    // Adiciona o conteúdo do cheat. O trim() remove espaços em branco/quebras de linha desnecessárias 
-                    // no início e no fim, mas preserva as quebras de linha internas para manter a legibilidade do código.
-                    // Tudo em MAIÚSCULAS para o estilo PAGER.
-                    output += `${cheatContent.trim().toUpperCase()}\n\n`;
+            // 6. Iterar sobre TODOS os blocos de Build ID e formatar os cheats
+            buildIdKeys.forEach(buildId => {
+                const cheats = cheatData[buildId];
+                output += `--- CHEATS (BUILD ID: ${buildId.toUpperCase()}) ---\n\n`;
+                
+                for (const cheatNameWithBrackets in cheats) {
+                    if (cheats.hasOwnProperty(cheatNameWithBrackets)) {
+                        let cheatContent = cheats[cheatNameWithBrackets];
+                        
+                        // Adiciona o nome do cheat (MAIÚSCULAS)
+                        output += `${cheatNameWithBrackets.toUpperCase()}\n`; 
+                        
+                        // Adiciona o conteúdo do cheat SEM MODIFICAR NADA (preserva a primeira linha, espaços e quebras)
+                        // Apenas converte para MAIÚSCULAS.
+                        output += `${cheatContent.toUpperCase()}\n`;
+                    }
                 }
-            }
+                output += `\n`; // Adiciona uma linha em branco após cada bloco de Build ID
+            });
+
 
             return output.trim();
         }
