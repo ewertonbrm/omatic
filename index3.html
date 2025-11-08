@@ -386,7 +386,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            statusElement.textContent = `✅ SUCESSO! O DOWNLOAD DO ARQUIVO ${outputFileName} FOI INICIADO.`;
+            statusElement.textContent = `SUCESSO! O DOWNLOAD DO ARQUIVO ${outputFileName} FOI INICIADO.`;
         }
 
         // Função que busca e exibe o modal de visualização
@@ -419,15 +419,15 @@
                     return true;
                     
                 } else if (response.status === 404) {
-                    statusElement.textContent = `❌ ERRO: CHEAT PARA O ID ${gameId} NÃO ENCONTRADO. VERIFIQUE O ID.`;
+                    statusElement.textContent = `ERRO: CHEAT PARA O ID ${gameId} NÃO ENCONTRADO. VERIFIQUE O ID.`;
                     return false; 
                 } else {
-                    statusElement.textContent = `❌ ERRO: FALHA AO BUSCAR CHEAT (STATUS: ${response.status}).`;
+                    statusElement.textContent = `ERRO: FALHA AO BUSCAR CHEAT (STATUS: ${response.status}).`;
                     return false; 
                 }
             } catch (error) {
                 console.error('Erro de rede ou na operação:', error);
-                statusElement.textContent = '❌ ERRO DE CONEXÃO OU REDE. VERIFIQUE SUA INTERNET.';
+                statusElement.textContent = 'ERRO DE CONEXÃO OU REDE. VERIFIQUE SUA INTERNET.';
                 return false; 
             } finally {
                 downloadButton.disabled = false;
@@ -442,7 +442,7 @@
             if (gameId.length === 16 && /^[0-9A-F]+$/.test(gameId)) {
                 await buscarEVisualizarCheat(gameId);
             } else {
-                statusElement.textContent = '⚠️ POR FAVOR, INSIRA UM ID DE 16 CARACTERES HEXADECIMAIS (EX: 0100...).';
+                statusElement.textContent = 'POR FAVOR, INSIRA UM ID DE 16 CARACTERES HEXADECIMAIS (EX: 0100...).';
                 inputElement.focus();
             }
         }
